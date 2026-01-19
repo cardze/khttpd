@@ -89,15 +89,6 @@ jobs:
         echo "Checking code style with clang-format..."
         clang-format --dry-run --Werror http_server.c http_server.h main.c htstress.c
 
-    - name: Check with kernel checkpatch
-      run: |
-        # Download Linux kernel checkpatch.pl if available
-        if [ -f "/lib/modules/$(uname -r)/build/scripts/checkpatch.pl" ]; then
-          /lib/modules/$(uname -r)/build/scripts/checkpatch.pl --no-tree --file *.c *.h || true
-        else
-          echo "checkpatch.pl not available, skipping style check"
-        fi
-
   clean-build:
     runs-on: ubuntu-latest
     
