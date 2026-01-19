@@ -78,12 +78,18 @@ jobs:
         sudo apt-get install -y \
           build-essential \
           linux-headers-$(uname -r) \
-          wget
+          wget \
+          clang-format
 
     - name: Download http_parser
       run: make http_parser.c
 
-    - name: Check coding style
+    - name: Check coding style with clang-format
+      run: |
+        echo "Checking code style with clang-format..."
+        clang-format --dry-run --Werror http_server.c http_server.h main.c htstress.c
+
+    - name: Check with kernel checkpatch
       run: |
         # Download Linux kernel checkpatch.pl if available
         if [ -f "/lib/modules/$(uname -r)/build/scripts/checkpatch.pl" ]; then
