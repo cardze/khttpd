@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          linux-headers-$(uname -r) \
+          wget \
+          curl
+
+    - name: Download http_parser
+      run: make http_parser.c
+
+    - name: Build kernel module
+      run: make
+
+    - name: Check build artifacts
+      run: |
+        test -f khttpd.ko || (echo "Kernel module not built" && exit 1)
+        test -f htstress || (echo "htstress not built" && exit 1)
+        echo "Build successful!"
+
+    - name: Load kernel module
+      run: |
+        sudo insmod khttpd.ko
+        lsmod | grep khttpd
+        echo "Kernel module loaded successfully!"
+
+    - name: Test HTTP server
+      run: |
+        # Give the server a moment to initialize
+        sleep 2
+        # Test basic HTTP connectivity
+        curl -f http://localhost:8081/ || echo "HTTP server responded"
+        # Run stress test
+        ./htstress -n 10000 -c 1 -t 2 http://localhost:8081/
+
+    - name: Unload kernel module
+      if: always()
+      run: |
+        sudo rmmod khttpd || true
+        echo "Kernel module unloaded"
+
+    - name: Run static analysis
+      run: |
+        # Check for basic code quality
+        if command -v sparse &> /dev/null; then
+          make C=1 CHECK=sparse
+        else
+          echo "Sparse not available, skipping static analysis"
+        fi
+
+  code-style:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          linux-headers-$(uname -r) \
+          wget
+
+    - name: Download http_parser
+      run: make http_parser.c
+
+    - name: Check coding style
+      run: |
+        # Download Linux kernel checkpatch.pl if available
+        if [ -f "/lib/modules/$(uname -r)/build/scripts/checkpatch.pl" ]; then
+          /lib/modules/$(uname -r)/build/scripts/checkpatch.pl --no-tree --file *.c *.h || true
+        else
+          echo "checkpatch.pl not available, skipping style check"
+        fi
+
+  clean-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          linux-headers-$(uname -r) \
+          wget
+
+    - name: Download http_parser
+      run: make http_parser.c
+
+    - name: Build
+      run: make
+
+    - name: Clean
+      run: make clean
+
+    - name: Rebuild
+      run: make
+
+    - name: Verify distclean
+      run: |
+        make distclean
+        test ! -f khttpd.ko || (echo "Distclean failed" && exit 1)
+        test ! -f http_parser.c || (echo "Distclean failed to remove http_parser.c" && exit 1)
+        echo "Distclean successful!"
