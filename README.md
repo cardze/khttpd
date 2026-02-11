@@ -18,7 +18,7 @@ docker-compose up --build
 docker build -t khttpd .
 docker run --privileged -v /lib/modules:/lib/modules:ro -p 8081:8081 khttpd
 
-# To use a custom port
+# To use a custom port (note: both the host port mapping and PORT env var should match)
 docker run --privileged -v /lib/modules:/lib/modules:ro -p 9000:9000 -e PORT=9000 khttpd
 ```
 

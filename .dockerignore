@@ -16,7 +16,3 @@
 http_parser.c
 http_parser.h
 htstress
-
-# Documentation
-README.md
-LICENSE
