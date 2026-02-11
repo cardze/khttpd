@@ -27,9 +27,8 @@ RUN make htstress
 # Expose the default port
 EXPOSE 8081
 
-# Copy and set executable permission for entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Set executable permission for entrypoint script
+RUN chmod +x /khttpd/entrypoint.sh
 
 # Run the entrypoint script
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/khttpd/entrypoint.sh"]

@@ -29,7 +29,7 @@ trap "echo 'Stopping khttpd...'; rmmod khttpd; exit 0" SIGINT SIGTERM
 
 # Wait indefinitely
 while true; do
-    sleep 1
+    sleep 10
     # Check if module is still loaded
     if ! lsmod | grep -q khttpd; then
         echo "khttpd module was unloaded unexpectedly"
