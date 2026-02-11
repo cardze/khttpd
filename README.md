@@ -4,6 +4,47 @@
 The server defaults to port 8081, but this can be easily configured using
 command line argument `port=?` when you are about to load the kernel module.
 
+## Usage
+
+### Running with Docker
+
+The easiest way to run `khttpd` is using Docker:
+
+```bash
+# Build and run with docker-compose
+docker-compose up --build
+
+# Or build and run manually
+docker build -t khttpd .
+docker run --privileged -p 8081:8081 khttpd
+
+# To use a custom port
+docker run --privileged -p 9000:9000 -e PORT=9000 khttpd
+```
+
+**Note**: The `--privileged` flag is required because the container needs to load kernel modules.
+
+### Testing the server
+
+Once running, you can test the server with:
+
+```bash
+curl http://localhost:8081/
+```
+
+### Manual Installation
+
+To build and run without Docker:
+
+```bash
+make
+sudo insmod khttpd.ko
+# Test with curl or the included stress tool
+./htstress -n 1000 -c 1 -t 4 http://localhost:8081/
+# Unload module when done
+sudo rmmod khttpd
+```
+
 ## TODO
 * Release resources when HTTP connection is about to be closed.
 * Introduce CMWQ.
