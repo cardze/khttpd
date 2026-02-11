@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  khttpd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: khttpd
+    # Privileged mode is required to load kernel modules
+    privileged: true
+    ports:
+      - "8081:8081"
+    environment:
+      # You can change the port by setting this environment variable
+      - PORT=8081
+    volumes:
+      # Mount host kernel headers so module can be built for the host kernel
+      - /lib/modules:/lib/modules:ro
+    restart: unless-stopped

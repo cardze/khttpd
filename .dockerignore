@@ -1,0 +1,18 @@
+# Git files
+.git
+.gitignore
+
+# Build artifacts
+*.ko
+*.o
+*.mod*
+*.order
+*.symvers
+*.cmd
+.tmp_versions
+.cache.mk
+
+# Generated files
+http_parser.c
+http_parser.h
+htstress
