@@ -8,7 +8,7 @@ command line argument `port=?` when you are about to load the kernel module.
 
 ### Running with Docker
 
-The easiest way to run `khttpd` is using Docker:
+The easiest way to run `khttpd` is using Docker. The Docker container builds the kernel module at runtime to match your host kernel:
 
 ```bash
 # Build and run with docker-compose
@@ -16,13 +16,16 @@ docker-compose up --build
 
 # Or build and run manually
 docker build -t khttpd .
-docker run --privileged -p 8081:8081 khttpd
+docker run --privileged -v /lib/modules:/lib/modules:ro -p 8081:8081 khttpd
 
 # To use a custom port
-docker run --privileged -p 9000:9000 -e PORT=9000 khttpd
+docker run --privileged -v /lib/modules:/lib/modules:ro -p 9000:9000 -e PORT=9000 khttpd
 ```
 
-**Note**: The `--privileged` flag is required because the container needs to load kernel modules.
+**Important Notes**:
+- The `--privileged` flag is required because the container needs to load kernel modules
+- The `-v /lib/modules:/lib/modules:ro` volume mount is required so the module can be built for your host kernel
+- The kernel module is built at container startup to match your host's kernel version
 
 ### Testing the server
 

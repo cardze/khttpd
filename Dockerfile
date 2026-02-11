@@ -18,15 +18,28 @@ WORKDIR /khttpd
 # Copy source files
 COPY . .
 
-# Build the kernel module and htstress
-RUN make
+# Download http_parser files
+RUN make http_parser.c
+
+# Build htstress (userspace tool)
+RUN make htstress
 
 # Expose the default port
 EXPOSE 8081
 
-# Create entrypoint script
+# Create entrypoint script that builds kernel module at runtime
 RUN echo '#!/bin/bash\n\
 set -e\n\
+\n\
+# Build kernel module for the host kernel at runtime\n\
+echo "Building khttpd kernel module for host kernel..."\n\
+cd /khttpd\n\
+make -C /lib/modules/$(uname -r)/build M=$(pwd) modules\n\
+\n\
+if [ ! -f /khttpd/khttpd.ko ]; then\n\
+    echo "Failed to build kernel module"\n\
+    exit 1\n\
+fi\n\
 \n\
 # Load the kernel module\n\
 echo "Loading khttpd kernel module..."\n\
