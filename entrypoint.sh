@@ -25,7 +25,13 @@ fi
 
 # Keep container running and monitor module
 echo "khttpd is running. Press Ctrl+C to stop."
-trap "echo 'Stopping khttpd...'; rmmod khttpd; exit 0" SIGINT SIGTERM
+trap "echo 'Stopping khttpd...'; \
+      if lsmod | grep -q khttpd; then \
+          rmmod khttpd && echo 'khttpd module unloaded successfully' || echo 'Warning: Failed to unload khttpd module'; \
+      else \
+          echo 'khttpd module was already unloaded'; \
+      fi; \
+      exit 0" SIGINT SIGTERM
 
 # Wait indefinitely
 while true; do
